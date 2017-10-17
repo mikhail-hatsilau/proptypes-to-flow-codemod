@@ -8,6 +8,8 @@ const removePropTypesOptions = {
   'remove-prop-types': true,
 };
 
+defineTest(__dirname, './src/propsToFlow', null, 'classWithoutSuper');
+
 defineTest(__dirname, './src/propsToFlow', null, 'classPropTypesToFlow1');
 defineTest(__dirname, './src/propsToFlow', removePropTypesOptions, 'classPropTypesToFlow2');
 defineTest(__dirname, './src/propsToFlow', removePropTypesOptions, 'classPropTypesToFlow3');

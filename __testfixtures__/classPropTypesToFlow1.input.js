@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 
 class Tooltip extends Component {
   static propTypes = {
-    headline: PropTypes.string.isRequired,
+    headline: PropTypes.any,
     children: PropTypes.node,
-    text: PropTypes.string,
+    text: PropTypes.string.isRequired,
     shouldBeShown: PropTypes.bool,
-    icon: PropTypes.oneOf(['default', 'custom']),
+    icon: PropTypes.oneOf(['default', 'custom', null]),
+    background: PropTypes.oneOf([colors.red, colors.blue]),
     time: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     size: PropTypes.shape({
       width: PropTypes.number,
@@ -17,11 +18,12 @@ class Tooltip extends Component {
     onShow: PropTypes.func,
     position: PropTypes.object,
     colors: PropTypes.array,
-  }
+    arrowDirection: someVariableName,
+  };
 
   static defaultProps = {
     headline: 'Test'
-  }
+  };
 
   constructor(props) {
     super(props);

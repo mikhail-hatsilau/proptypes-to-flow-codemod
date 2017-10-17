@@ -1,12 +1,13 @@
-import map from 'lodash/fp/map';
-import flow from 'lodash/fp/flow';
-import some from 'lodash/fp/some';
+import { map, flow, some, isNull, negate } from 'lodash/fp';
 import flowTypes from '../constants/flowTypes';
 import isObjectPropTypes from './isObjectPropTypes';
 import { isMemberExpression, isLiteral } from './typeHelpers';
 
+const createAnyTypeAnnotation = j =>
+  j.anyTypeAnnotation();
+
 const createArrayAnnotation = (j, typeOfArrayAnnotation) => {
-  const typeOfArray = typeOfArrayAnnotation || j.anyTypeAnnotation();
+  const typeOfArray = typeOfArrayAnnotation || createAnyTypeAnnotation(j);
   return j.arrayTypeAnnotation(typeOfArray);
 };
 
@@ -35,13 +36,12 @@ const createUnionByTypeAnnotation = (j, values) =>
   )(values.elements);
 
 const createUnionByValueAnnotation = (j, values) => {
-  if (some(element => !isLiteral(element), values.elements)) {
-    console.error('Value of "oneOf" type should be a literal');
-    process.exit(1);
+  if (some(negate(isLiteral), values.elements)) {
+    return createAnyTypeAnnotation(j);
   }
   return flow(
     map(element => {
-      const literalType = typeof element.value;
+      const literalType = !isNull(element.value) ? typeof element.value : element.value;
       return j[`${literalType}LiteralTypeAnnotation`](element.value, element.raw);
     }),
     j.unionTypeAnnotation,
@@ -62,6 +62,7 @@ const typesMap = {
   oneOfType: createUnionByTypeAnnotation,
   node: createGenericTypeAnnotation('Node'),
   element: createGenericTypeAnnotation('Element'),
+  any: createAnyTypeAnnotation,
 };
 
 const parseMemberExpression = (propType) =>
@@ -69,6 +70,9 @@ const parseMemberExpression = (propType) =>
 
 const parseCallExpression = (propType) =>
   [propType.callee.property.name, propType.arguments.length ? propType.arguments[0] : null];
+
+const parseUnknown = () =>
+  ['any', null];
 
 const parsersMap = {
   CallExpression: parseCallExpression,
@@ -81,16 +85,14 @@ const typesOfValuesSet = new Set([
 ]);
 
 const createTypeAnnotation = (j, propType) => {
-  const parsedPropType = parsersMap[propType.type](propType);
+  const parser = parsersMap[propType.type] || parseUnknown;
+  const parsedPropType = parser(propType);
   const [typeName, nestedPropType] = parsedPropType;
-  if (!typesMap[typeName]) {
-    console.warn(`${typeName} can not be handled`);
-    return null;
-  }
+  const flowTypeCreator = typesMap[typeName] || typesMap.any;
   if (nestedPropType && !typesOfValuesSet.has(nestedPropType.type)) {
-    return typesMap[typeName](j, createTypeAnnotation(j, nestedPropType));
+    return flowTypeCreator(j, createTypeAnnotation(j, nestedPropType));
   }
-  return typesMap[typeName](j, nestedPropType);
+  return flowTypeCreator(j, nestedPropType);
 };
 
 const createFlowObjectProperties = (j, types) =>

@@ -33,6 +33,7 @@ export default (j, ast, options) => {
   const classComponents = ast
     .find(j.ClassDeclaration)
     .filter(({ node }) => (
+      node.superClass &&
       isReactClass(node.superClass) &&
       (!node.superTypeParameters || !node.superTypeParameters.params.length)
     ));

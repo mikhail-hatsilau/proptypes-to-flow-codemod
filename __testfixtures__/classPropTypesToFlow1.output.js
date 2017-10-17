@@ -4,11 +4,12 @@ import type { Node } from 'react';
 import PropTypes from 'prop-types';
 
 type TooltipProps = {
-  headline: string,
+  headline?: any,
   children?: Node,
-  text?: string,
+  text: string,
   shouldBeShown?: boolean,
-  icon?: 'default' | 'custom',
+  icon?: 'default' | 'custom' | null,
+  background?: any,
   time?: number | string,
   size: {
     width: number,
@@ -18,15 +19,17 @@ type TooltipProps = {
   onShow?: Function,
   position?: {},
   colors?: any[],
+  arrowDirection?: any,
 };
 
 class Tooltip extends Component<TooltipProps> {
   static propTypes = {
-    headline: PropTypes.string.isRequired,
+    headline: PropTypes.any,
     children: PropTypes.node,
-    text: PropTypes.string,
+    text: PropTypes.string.isRequired,
     shouldBeShown: PropTypes.bool,
-    icon: PropTypes.oneOf(['default', 'custom']),
+    icon: PropTypes.oneOf(['default', 'custom', null]),
+    background: PropTypes.oneOf([colors.red, colors.blue]),
     time: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     size: PropTypes.shape({
       width: PropTypes.number,
@@ -36,11 +39,12 @@ class Tooltip extends Component<TooltipProps> {
     onShow: PropTypes.func,
     position: PropTypes.object,
     colors: PropTypes.array,
-  }
+    arrowDirection: someVariableName,
+  };
 
   static defaultProps = {
     headline: 'Test'
-  }
+  };
 
   constructor(props) {
     super(props);

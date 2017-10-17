@@ -22,7 +22,7 @@ type TooltipProps = {
 class Tooltip extends Component<TooltipProps> {
   static defaultProps = {
     headline: 'Test'
-  }
+  };
 
   constructor(props) {
     super(props);

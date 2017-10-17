@@ -7,13 +7,12 @@
     "test": "jest",
     "build": "rm -rf ./dist && babel src --out-dir dist",
     "lint": "eslint **/*.js",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged && npm run test"
   },
   "lint-staged": {
     "src/**/*.js": [
       "eslint --fix",
-      "git add",
-      "jest"
+      "git add"
     ]
   },
   "author": "Mikhail Hatsilau",

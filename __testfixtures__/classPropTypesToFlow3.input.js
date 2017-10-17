@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 class Tooltip extends Component {
   static defaultProps = {
     headline: 'Test'
-  }
+  };
 
   constructor(props) {
     super(props);

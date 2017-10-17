@@ -17,11 +17,11 @@ class Tooltip extends Component {
     onShow: PropTypes.func,
     position: PropTypes.object,
     colors: PropTypes.array,
-  }
+  };
 
   static defaultProps = {
     headline: 'Test'
-  }
+  };
 
   constructor(props) {
     super(props);
