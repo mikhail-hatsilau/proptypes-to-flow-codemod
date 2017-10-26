@@ -3,7 +3,7 @@ import isReactClass from '../util/isReactClass';
 import createTypeAnnotation from '../util/createTypeAnnotation';
 import getPropTypesStatement from '../util/getPropTypesStatement';
 import getTypeAliasName from '../util/getTypeAliasName';
-import getPropTypesObject from '../util/getPropsTypesObject';
+import { getPropTypesObject, removePropTypesVariableDeclaration } from '../util/propTypesObject';
 
 const getStaticPropTypes = (j, path) =>
   j(path).find(j.ClassProperty, {
@@ -29,13 +29,15 @@ const createSuperTypeParameters = (j, typeParameteres, typeAliasName) => {
   return j.typeParameterInstantiation([createPropsTypeAnnotation(j, typeAliasName)]);
 };
 
+const checkExistintgPropsType = ({ superTypeParameters }) =>
+  superTypeParameters && superTypeParameters.params.length;
+
 export default (j, ast, options) => {
   const classComponents = ast
     .find(j.ClassDeclaration)
     .filter(({ node }) => (
       node.superClass &&
-      isReactClass(node.superClass) &&
-      (!node.superTypeParameters || !node.superTypeParameters.params.length)
+      isReactClass(node.superClass)
     ));
 
   const typeAliases = [];
@@ -47,36 +49,27 @@ export default (j, ast, options) => {
   classComponents.forEach((path) => {
     const { node } = path;
     const staticPropTypes = getStaticPropTypes(j, path);
-    let propTypesStatement;
-    let propTypesObject;
+    const propTypesStatement = getPropTypesStatement(j, ast, node.id.name);
 
-    if (!staticPropTypes.length) {
-      propTypesStatement = getPropTypesStatement(j, ast, node.id.name);
-      if (!propTypesStatement.length) {
-        return;
-      }
+    if (!staticPropTypes.length && !propTypesStatement.length) {
+      return;
+    }
 
-      propTypesObject = getPropTypesObject(
-        j,
-        ast,
-        propTypesStatement.get().node.expression,
-        options,
-      );
-    } else {
-      propTypesObject = getPropTypesObject(j, ast, staticPropTypes.get().node, options);
+    const propTypes = staticPropTypes.length ? staticPropTypes : propTypesStatement;
+    const propTypesObject = getPropTypesObject(j, ast, propTypes, options);
+
+    if (options['remove-prop-types']) {
+      removePropTypesVariableDeclaration(j, ast, propTypes);
+      propTypes.remove();
+    }
+
+    if (checkExistintgPropsType(node)) {
+      return;
     }
 
     const typeAliasName = getTypeAliasName(node.id.name);
 
     typeAliases.push(createTypeAnnotation(j, propTypesObject, ast, typeAliasName));
-
-    if (options['remove-prop-types']) {
-      if (staticPropTypes.length) {
-        staticPropTypes.remove();
-      } else {
-        propTypesStatement.remove();
-      }
-    }
 
     node.superTypeParameters = createSuperTypeParameters(
       j,

@@ -3,7 +3,7 @@ import getPropTypesStatement from '../util/getPropTypesStatement';
 import createTypeAnnotation from '../util/createTypeAnnotation';
 import getTypeAliasName from '../util/getTypeAliasName';
 import { isIdentifier, isBlockStatement } from '../util/typeHelpers';
-import getPropTypesObject from '../util/getPropsTypesObject';
+import { getPropTypesObject, removePropTypesVariableDeclaration } from '../util/propTypesObject';
 
 const buildFunctionInfo = (name, func) => ({ name, func });
 
@@ -68,6 +68,9 @@ const addTypeAnnotationToFunction = (j, funcNode, typeAliasName) => {
   }
 };
 
+const checkExistingPropsType = ({ params }) =>
+  params.length && params[0].typeAnnotation;
+
 export default (j, ast, options) => {
   const potentialFunctionalComponents = getPotentialFunctionalComponents(j, ast);
   const typeAliases = reduce((types, { name, func }) => {
@@ -75,17 +78,22 @@ export default (j, ast, options) => {
     if (!propTypesStatement.length) {
       return types;
     }
-    const typeAliasName = getTypeAliasName(name);
+
     const propTypesObject = getPropTypesObject(
       j,
       ast,
-      propTypesStatement.get().node.expression,
+      propTypesStatement,
       options,
     );
-    const typeAnnotation = createTypeAnnotation(j, propTypesObject, ast, typeAliasName);
     if (options['remove-prop-types']) {
+      removePropTypesVariableDeclaration(j, ast, propTypesStatement);
       propTypesStatement.remove();
     }
+    if (checkExistingPropsType(func)) {
+      return types;
+    }
+    const typeAliasName = getTypeAliasName(name);
+    const typeAnnotation = createTypeAnnotation(j, propTypesObject, ast, typeAliasName);
     addTypeAnnotationToFunction(j, func, typeAliasName);
 
     return [...types, typeAnnotation];

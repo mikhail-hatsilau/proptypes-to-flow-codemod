@@ -108,15 +108,17 @@ const transformer = (fileInfo, { jscodeshift }, options) => {
   ];
   addTypeAliases(jscodeshift, ast, typeAliases);
   addTypeImport(jscodeshift, ast, typeAliases);
-  addFlowComment(jscodeshift, ast);
 
   if (options['remove-prop-types']) {
     removePropTypesImport(jscodeshift, ast);
   }
 
+  addFlowComment(jscodeshift, ast);
+
   return ast.toSource({
     lineTerminator: '\n',
     quote: 'single',
+    trailingComma: true,
   });
 };
 
