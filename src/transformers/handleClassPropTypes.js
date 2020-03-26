@@ -29,7 +29,7 @@ const createSuperTypeParameters = (j, typeParameteres, typeAliasName) => {
   return j.typeParameterInstantiation([createPropsTypeAnnotation(j, typeAliasName)]);
 };
 
-const checkExistintgPropsType = ({ superTypeParameters }) =>
+const checkExistingPropTypes = ({ superTypeParameters }) =>
   superTypeParameters && superTypeParameters.params.length;
 
 export default (j, ast, options) => {
@@ -52,6 +52,7 @@ export default (j, ast, options) => {
     const propTypesStatement = getPropTypesStatement(j, ast, node.id.name);
 
     if (!staticPropTypes.length && !propTypesStatement.length) {
+      console.log('Could not find propTypes definition, either static or as a statement.');
       return;
     }
 
@@ -63,7 +64,7 @@ export default (j, ast, options) => {
       propTypes.remove();
     }
 
-    if (checkExistintgPropsType(node)) {
+    if (checkExistingPropTypes(node)) {
       return;
     }
 
