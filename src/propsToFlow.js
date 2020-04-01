@@ -1,8 +1,8 @@
 import 'babel-polyfill';
 
 import { flow, map, reduce, findIndex, findLastIndex, find } from 'lodash/fp';
-import handleClassPropTypes from './tranformers/handleClassPropTypes';
-import handleFunctionPropTypes from './tranformers/handleFunctionPropTypes';
+import handleClassPropTypes from './transformers/handleClassPropTypes';
+import handleFunctionPropTypes from './transformers/handleFunctionPropTypes';
 import { isReactType, isImportDeclaration, isImportDeclarationReact } from './util/typeHelpers';
 
 const addFlowComment = (j, ast) => {
